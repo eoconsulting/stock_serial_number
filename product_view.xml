@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<openerp>
+	<data>
+		
+		<record model='ir.ui.view' id='product_normal_form_view_inherit_serial'>
+			<field name='name'>Product Normal Form Inherit Serial</field>
+			<field name='model'>product.product</field>
+			<field name='inherit_id' ref='product.product_normal_form_view'/>
+			<field name='type'>form</field>
+			<field name='arch' type='xml'>
+				<xpath expr="/form/notebook/page[@string='Information']" position="inside">
+					<group>
+						<separator string="Serial Number" colspan="4"/>
+						<field name="is_serial" colspan="4"/>
+						<field name="serial_sequence_id" colspan="4"/>
+					</group>
+				</xpath>
+			</field>
+		</record>
+		
+	</data>
+</openerp>

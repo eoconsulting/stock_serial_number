@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+  <data noupdate="1">
+
+    <record id="seq_stock_serial_number" model="ir.sequence.type">
+      <field name="code">stock.serial.number</field>
+      <field name="name">Serial Number</field>
+    </record>
+
+  </data>
+</openerp>

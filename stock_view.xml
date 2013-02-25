@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<openerp>
+	<data>
+		
+		<record model='ir.ui.view' id='stock_traking_form_view_inherit_serial'>
+			<field name='name'>Stock Tracking Form Inherit</field>
+			<field name='model'>stock.tracking</field>
+			<field name='inherit_id' ref='stock.view_tracking_form'/>
+			<field name='type'>form</field>
+			<field name='arch' type='xml'>
+				<xpath expr="/form/notebook/page[@string='Stock Moves']" position="before">
+					<page string="Serial Numbers">
+						<field colspan="2" name="serial_ids" nolabel="1"/>
+                    </page>
+				</xpath>
+			</field>
+		</record>
+		
+		<record model='ir.ui.view' id='view_production_lot_form_view_inh_serial'>
+			<field name='name'>Stock Production Lot Form Inherit</field>
+			<field name='model'>stock.production.lot</field>
+			<field name='inherit_id' ref='stock.view_production_lot_form'/>
+			<field name='type'>form</field>
+			<field name='arch' type='xml'>
+				<xpath expr="/form/notebook/page[@string='Stock Moves']" position="before">
+					<page string="Serial Numbers">
+						<field colspan="2" name="serial_ids" nolabel="1"/>
+                    </page>
+				</xpath>
+			</field>
+		</record>
+		
+		<record model='ir.ui.view' id='stock_move_form_view_inh_serial'>
+			<field name='name'>Stock Move Form Inherit</field>
+			<field name='model'>stock.move</field>
+			<field name='inherit_id' ref='stock.view_move_form'/>
+			<field name='type'>form</field>
+			<field name='arch' type='xml'>
+				<xpath expr="/form/field[@name='state']" position="before">
+					<field name="is_serial" invisible="True"/>
+					<field name="serial_ids" domain="[('product_id','=?',product_id),('last_location_id','=?',location_id)]" on_change="onchange_serial_ids(serial_ids)" attrs="{'invisible':[('is_serial','=',False)]}" nolabel="1" colspan="4" context="{'product_id': product_id, 'prodlot_id': prodlot_id, 'tracking_id': tracking_id}"/>
+					<separator colspan="4" attrs="{'invisible':[('is_serial','=',False)]}"/>
+				</xpath>
+			</field>
+		</record>
+		
+		<record model='ir.ui.view' id='stock_picking_in_form_view_inh_serial'>
+			<field name='name'>Stock Picking in Form Inherit</field>
+			<field name='model'>stock.picking</field>
+			<field name='inherit_id' ref='stock.view_picking_in_form'/>
+			<field name='type'>form</field>
+			<field name='arch' type='xml'>
+				<xpath expr="/form/notebook/page/field[@name='move_lines']/form/field[@name='state']" position="before">
+					<field name="is_serial" invisible="True"/>
+					<field colspan="4" name="serial_ids" nolabel="1" attrs="{'invisible':[('is_serial','=',False)]}"/>
+					<separator colspan="4" attrs="{'invisible':[('is_serial','=',False)]}"/>
+				</xpath>
+			</field>
+		</record>
+		
+		<record model='ir.ui.view' id='stock_picking_out_form_view_inh_serial'>
+			<field name='name'>Stock Picking in Form Inherit</field>
+			<field name='model'>stock.picking</field>
+			<field name='inherit_id' ref='stock.view_picking_out_form'/>
+			<field name='type'>form</field>
+			<field name='arch' type='xml'>
+				<xpath expr="/form/notebook/page/field[@name='move_lines']/form/field[@name='state']" position="before">
+					<field name="is_serial" invisible="True"/>
+					<field colspan="4" name="serial_ids" nolabel="1" attrs="{'invisible':[('is_serial','=',False)]}"/>
+					<separator colspan="4" attrs="{'invisible':[('is_serial','=',False)]}"/>
+				</xpath>
+			</field>
+		</record>
+		
+		<record model='ir.ui.view' id='stock_picking_form_view_inh_serial'>
+			<field name='name'>Stock Picking in Form Inherit</field>
+			<field name='model'>stock.picking</field>
+			<field name='inherit_id' ref='stock.view_picking_form'/>
+			<field name='type'>form</field>
+			<field name='arch' type='xml'>
+				<xpath expr="/form/notebook/page/field[@name='move_lines']/form/field[@name='state']" position="before">
+					<field name="is_serial" invisible="True"/>
+					<field colspan="4" name="serial_ids" nolabel="1" attrs="{'invisible':[('is_serial','=',False)]}"/>
+					<separator colspan="4" attrs="{'invisible':[('is_serial','=',False)]}"/>
+				</xpath>
+			</field>
+		</record>
+		
+	</data>
+</openerp>
