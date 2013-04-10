@@ -2,7 +2,8 @@
 ##############################################################################
 #
 #    OpenERP, Open Source Management Solution
-#     Copyright (C) 2011 Cubic ERP - Teradata SAC (<http://cubicerp.com>).
+# Copyright (c) 2011-2013 Cubic ERP - Teradata SAC. (http://cubicerp.com).
+#                         Mariano Ruiz (Enterprise Objects Consulting)
 #
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU Affero General Public License as
@@ -18,6 +19,7 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 ##############################################################################
+
 
 from osv import osv, fields
 import netsvc

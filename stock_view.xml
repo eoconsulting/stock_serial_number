@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <openerp>
-	<data>
+	<data noupdate="0">
 		
 		<record model='ir.ui.view' id='stock_traking_form_view_inherit_serial'>
 			<field name='name'>Stock Tracking Form Inherit</field>
@@ -11,7 +11,7 @@
 			<field name='arch' type='xml'>
 				<xpath expr="/form/notebook/page[@string='Stock Moves']" position="before">
 					<page string="Serial Numbers">
-						<field colspan="2" name="serial_ids" nolabel="1"/>
+						<field colspan="2" name="serial_ids" nolabel="1" context="{'product_id': product_id, 'last_location_id': location_id}"/>
                     </page>
 				</xpath>
 			</field>
@@ -25,7 +25,7 @@
 			<field name='arch' type='xml'>
 				<xpath expr="/form/notebook/page[@string='Stock Moves']" position="before">
 					<page string="Serial Numbers">
-						<field colspan="2" name="serial_ids" nolabel="1"/>
+						<field colspan="2" name="serial_ids" nolabel="1" context="{'product_id': product_id, 'last_location_id': location_id}"/>
                     </page>
 				</xpath>
 			</field>
@@ -39,7 +39,7 @@
 			<field name='arch' type='xml'>
 				<xpath expr="/form/field[@name='state']" position="before">
 					<field name="is_serial" invisible="True"/>
-					<field name="serial_ids" domain="[('product_id','=?',product_id),('last_location_id','=?',location_id)]" on_change="onchange_serial_ids(serial_ids)" attrs="{'invisible':[('is_serial','=',False)]}" nolabel="1" colspan="4" context="{'product_id': product_id, 'prodlot_id': prodlot_id, 'tracking_id': tracking_id}"/>
+					<field name="serial_ids" on_change="onchange_serial_ids(serial_ids)" attrs="{'invisible':[('is_serial','=',False)]}" nolabel="1" colspan="4" context="{'product_id': product_id, 'prodlot_id': prodlot_id, 'tracking_id': tracking_id, 'last_location_id': location_id}"/>
 					<separator colspan="4" attrs="{'invisible':[('is_serial','=',False)]}"/>
 				</xpath>
 			</field>
@@ -53,7 +53,7 @@
 			<field name='arch' type='xml'>
 				<xpath expr="/form/notebook/page/field[@name='move_lines']/form/field[@name='state']" position="before">
 					<field name="is_serial" invisible="True"/>
-					<field colspan="4" name="serial_ids" nolabel="1" attrs="{'invisible':[('is_serial','=',False)]}"/>
+					<field colspan="4" name="serial_ids" nolabel="1" attrs="{'invisible':[('is_serial','=',False)]}" context="{'product_id': product_id, 'last_location_id': location_id}"/>
 					<separator colspan="4" attrs="{'invisible':[('is_serial','=',False)]}"/>
 				</xpath>
 			</field>
@@ -67,7 +67,7 @@
 			<field name='arch' type='xml'>
 				<xpath expr="/form/notebook/page/field[@name='move_lines']/form/field[@name='state']" position="before">
 					<field name="is_serial" invisible="True"/>
-					<field colspan="4" name="serial_ids" nolabel="1" attrs="{'invisible':[('is_serial','=',False)]}"/>
+					<field colspan="4" name="serial_ids" nolabel="1" attrs="{'invisible':[('is_serial','=',False)]}" context="{'product_id': product_id, 'last_location_id': location_id}"/>
 					<separator colspan="4" attrs="{'invisible':[('is_serial','=',False)]}"/>
 				</xpath>
 			</field>
@@ -81,7 +81,7 @@
 			<field name='arch' type='xml'>
 				<xpath expr="/form/notebook/page/field[@name='move_lines']/form/field[@name='state']" position="before">
 					<field name="is_serial" invisible="True"/>
-					<field colspan="4" name="serial_ids" nolabel="1" attrs="{'invisible':[('is_serial','=',False)]}"/>
+					<field colspan="4" name="serial_ids" nolabel="1" attrs="{'invisible':[('is_serial','=',False)]}" context="{'product_id': product_id, 'last_location_id': location_id}"/>
 					<separator colspan="4" attrs="{'invisible':[('is_serial','=',False)]}"/>
 				</xpath>
 			</field>

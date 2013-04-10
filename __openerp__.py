@@ -1,8 +1,9 @@
-# -*- encoding: utf-8 -*-
+# -*- coding: utf-8 -*-
 ##############################################################################
 #
 #    OpenERP, Open Source Management Solution
-#    Copyright (C) 2011 Cubic ERP - Teradata SAC (<http://cubicerp.com>).
+# Copyright (c) 2011-2013 Cubic ERP - Teradata SAC. (http://cubicerp.com).
+#                         Mariano Ruiz (Enterprise Objects Consulting)
 #
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU Affero General Public License as
@@ -18,29 +19,29 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 ##############################################################################
+
+
 {
     "name": "Stock and Production Serial Number",
-    "version": "1.1",
+    "version": "1.2",
     "description": """
 Adds unique serial numbers to the production lots and stock moves.
     """,
-    "author": "Cubic ERP / Enterprise Objects Consulting",
+    "author": "Cubic ERP / Modified by Enterprise Objects Consulting",
     "website": "http://www.eoconsulting.com.ar",
     "category": "Warehouse",
-    "depends": ["stock",
+    "depends": [
+        "stock",
 	],
-    "data":[
+    "update_xml":[
 	    "stock_view.xml",
 	    "product_view.xml",
 	    "stock_serial_number_view.xml",
 	    "stock_serial_number.xml",
 	],
-    "demo_xml": [],
-    "update_xml": [
+    "data": [
         'security/ir.model.access.csv',
 	],
-    "active": False,
     "installable": True,
-    "certificate" : "",
 }
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:

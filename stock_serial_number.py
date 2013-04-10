@@ -2,7 +2,8 @@
 ##############################################################################
 #
 #    OpenERP, Open Source Management Solution
-#     Copyright (C) 2011 Cubic ERP - Teradata SAC (<http://cubicerp.com>).
+# Copyright (c) 2011-2013 Cubic ERP - Teradata SAC. (http://cubicerp.com).
+#                         Mariano Ruiz (Enterprise Objects Consulting)
 #
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU Affero General Public License as
@@ -19,14 +20,14 @@
 #
 ##############################################################################
 
+
 from osv import osv, fields
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 
 class stock_serial(osv.osv):
     
-    def _get_last_location_ids(self, cr, uid, ids, field_name, arg, context=None):
-        if context is None: context = {}
+    def _get_last_location_ids(self, cr, uid, ids, field_name, arg, context={}):
         obj_location = self.pool.get('stock.location')
         vals = {}
         for serial in self.browse(cr,uid,ids,context=context):
@@ -35,14 +36,28 @@ class stock_serial(osv.osv):
             max_date = datetime(1,1,1)
             for move in serial.move_ids:
                 move_date = datetime.strptime(move.date,'%Y-%m-%d %H:%M:%S')
-                if move_date > max_date:
+                move_id = move.id
+                if move_date >= max_date:
+                    if move_date == max_date and move.id > move_id:
+                        # NOTE: Date fields only save in seconds precisions,
+                        # when a operation throws 2 moves, both operations have
+                        # the same date time, so the last move only can only know
+                        # by the pkid
+                        break
                     if move.state == 'done':
                         vals[serial.id] = move.location_dest_id.id
                     elif move.state not in ('cancel','draft'):
                         virtual = move.location_dest_id.id
                     max_date = move_date
+                    move_id = move.id
             if not vals[serial.id]: vals[serial.id] = virtual
         return vals
+
+    def _set_last_location_ids(self, cr, uid, ids, field_name, value, arg, context={}):
+        for serial_id, loc_id in self._get_last_location_ids(cr, uid, ids, field_name, arg, context=context):
+            if loc_id:
+                cr.execute("""update stock_serial set last_location_id=%s where id=%s""", (loc_id, serial_id, ))
+        return True
     
     def _get_warranty_end(self, cr, uid, ids, field_name, arg, context=None):
         if context is None: context = {}
@@ -98,8 +113,8 @@ class stock_serial(osv.osv):
         if not res:
             return [('id', '=', '0')]
         return [('id', 'in', [x[0] for x in res])]
-    
-    
+
+
     _name = "stock.serial"
     _columns = {
             'product_id' : fields.many2one('product.product','Product',required=True,select=1, domain=[('is_serial','=',True)]),
@@ -110,7 +125,9 @@ class stock_serial(osv.osv):
             'warranty' : fields.float('Warranty time (months)'),
             'warranty_start' : fields.date('Warranty Start'),
             'warranty_end' : fields.function(_get_warranty_end,string='Warranty End',type="date",method=True),
-            'last_location_id' : fields.function(_get_last_location_ids,string='Last Location',fnct_search=_last_location_search,type="many2one",relation="stock.location",method=True,store=True,select=True),
+            'last_location_id' : fields.function(_get_last_location_ids, fnct_inv=_set_last_location_ids,
+                                                 string='Last Location',fnct_search=_last_location_search,
+                                                 type="many2one",relation="stock.location",method=True,select=True,store=True),
             'uom_id' : fields.related('product_id','uom_id',type='many2one',relation='product.uom',string='Unit of Measure', store=True, readonly=True),
         }
 
@@ -137,7 +154,6 @@ class stock_serial(osv.osv):
             'warranty_start' : start,
             'warranty_end': self.get_warranty_end(start,warranty),
         }
-        
         return {'value': result}
     
     def on_change_warranty(self, cr, uid, ids, start, warranty, context=None):
@@ -147,14 +163,31 @@ class stock_serial(osv.osv):
         result = {
             'warranty_end': self.get_warranty_end(start,warranty),
         }
-        
         return {'value': result}
-    
-    
-    
+
     def get_warranty_end(self,start,months):
         if not start: return False
         limit = datetime.strptime(start,'%Y-%m-%d') + relativedelta(months=int(months))
         return limit.strftime('%Y-%m-%d')
+
+    def search(self, cr, uid, args, offset=0, limit=None, order=None, context={}, count=False):
+        if context.get('last_location_id', False):
+            args.append('|')
+            args.append(('last_location_id', '=', context['last_location_id']))
+            args.append(('last_location_id', '=', False))
+        if context.get('product_id', False):
+            product = self.pool.get('product.product').browse(cr, uid, context['product_id'])
+            try:
+                if product.product_tmpl_id.is_multi_variants:
+                    args.append(('product_id.product_tmpl_id.id', '=', product.product_tmpl_id.id))
+                else:
+                    args.append(('product_id', '=', context['product_id']))
+            except:
+                # If 'product_variant_multi' module is not installed, the field 'is_multi_variants'
+                # not exist, so an exception is raised
+                args.append(('product_id', '=', context['product_id']))
+        res = super(stock_serial, self).search(cr, uid, args, offset=offset, limit=limit, order=order,
+                                                                 context=context, count=count)
+        return res
         
 stock_serial()

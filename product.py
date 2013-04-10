@@ -19,6 +19,7 @@
 #
 ##############################################################################
 
+
 from osv import osv, fields
 
 class product_template(osv.osv):
