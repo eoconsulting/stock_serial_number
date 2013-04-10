@@ -11,7 +11,7 @@
 			<field name='arch' type='xml'>
 				<xpath expr="/form/notebook/page[@string='Stock Moves']" position="before">
 					<page string="Serial Numbers">
-						<field colspan="2" name="serial_ids" nolabel="1" context="{'product_id': product_id}"/>
+						<field colspan="2" name="serial_ids" nolabel="1"/>
                     </page>
 				</xpath>
 			</field>
@@ -25,7 +25,7 @@
 			<field name='arch' type='xml'>
 				<xpath expr="/form/notebook/page[@string='Stock Moves']" position="before">
 					<page string="Serial Numbers">
-						<field colspan="2" name="serial_ids" nolabel="1" context="{'product_id': product_id}"/>
+						<field colspan="2" name="serial_ids" nolabel="1"/>
                     </page>
 				</xpath>
 			</field>
