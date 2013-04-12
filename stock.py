@@ -79,10 +79,17 @@ class stock_move(osv.osv):
                 len_serial = len(vals['serial_ids'][0][2])
             else:
                 len_serial = len(move.serial_ids)
-                
-            if qty != len_serial and move.product_id.is_serial:
-                raise osv.except_osv(_('Error'),
-                                _('The quantity is not equal to serial numbers'))
+            if move.product_id.is_serial:
+                if qty != len_serial:
+                    raise osv.except_osv(_('Error'),
+                            _('The quantity is not equal to serial numbers'))
+                if move.state == 'assigned' or move.state == 'confirmed':
+                    serial_ids = []
+                    for serial in move.serial_ids:
+                        if serial.product_id != move.product_id:
+                            serial_ids.append(serial.id)
+                    if len(serial_ids)>0:
+                        self.pool.get('stock.serial').write(cr,uid,serial_ids,{'product_id': move.product_id.id},context=context)
         return  super(stock_move, self).write(cr, uid, ids, vals, context=context)
 
 stock_move()

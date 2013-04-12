@@ -39,35 +39,35 @@
 			<field name='arch' type='xml'>
 				<xpath expr="/form/field[@name='state']" position="before">
 					<field name="is_serial" invisible="True"/>
-					<field name="serial_ids" on_change="onchange_serial_ids(serial_ids)" attrs="{'invisible':[('is_serial','=',False)]}" nolabel="1" colspan="4" context="{'product_id': product_id, 'prodlot_id': prodlot_id, 'tracking_id': tracking_id, 'last_location_id': location_id}"/>
+					<field name="serial_ids" on_change="onchange_serial_ids(serial_ids)" attrs="{'invisible':[('is_serial','=',False)]}" nolabel="1" colspan="4" context="{'product_id': product_id, 'prodlot_id': prodlot_id, 'tracking_id': tracking_id, 'move_id': id, 'last_location_id': location_id}"/>
 					<separator colspan="4" attrs="{'invisible':[('is_serial','=',False)]}"/>
 				</xpath>
 			</field>
 		</record>
 		
 		<record model='ir.ui.view' id='stock_picking_in_form_view_inh_serial'>
-			<field name='name'>Stock Picking in Form Inherit</field>
+			<field name='name'>Stock Picking In Form Inherit</field>
 			<field name='model'>stock.picking</field>
 			<field name='inherit_id' ref='stock.view_picking_in_form'/>
 			<field name='type'>form</field>
 			<field name='arch' type='xml'>
 				<xpath expr="/form/notebook/page/field[@name='move_lines']/form/field[@name='state']" position="before">
 					<field name="is_serial" invisible="True"/>
-					<field colspan="4" name="serial_ids" nolabel="1" attrs="{'invisible':[('is_serial','=',False)]}" context="{'product_id': product_id, 'last_location_id': location_id}"/>
+					<field colspan="4" name="serial_ids" nolabel="1" attrs="{'invisible':[('is_serial','=',False)]}" context="{'product_id': product_id, 'picking_in': 1, 'move_id': id, 'last_location_id': location_id}"/>
 					<separator colspan="4" attrs="{'invisible':[('is_serial','=',False)]}"/>
 				</xpath>
 			</field>
 		</record>
 		
 		<record model='ir.ui.view' id='stock_picking_out_form_view_inh_serial'>
-			<field name='name'>Stock Picking in Form Inherit</field>
+			<field name='name'>Stock Picking Out Form Inherit</field>
 			<field name='model'>stock.picking</field>
 			<field name='inherit_id' ref='stock.view_picking_out_form'/>
 			<field name='type'>form</field>
 			<field name='arch' type='xml'>
 				<xpath expr="/form/notebook/page/field[@name='move_lines']/form/field[@name='state']" position="before">
 					<field name="is_serial" invisible="True"/>
-					<field colspan="4" name="serial_ids" nolabel="1" attrs="{'invisible':[('is_serial','=',False)]}" context="{'product_id': product_id, 'last_location_id': location_id}"/>
+					<field colspan="4" name="serial_ids" nolabel="1" attrs="{'invisible':[('is_serial','=',False)]}" context="{'product_id': product_id, 'picking_out': 1, 'move_id': id, 'last_location_id': location_id}"/>
 					<separator colspan="4" attrs="{'invisible':[('is_serial','=',False)]}"/>
 				</xpath>
 			</field>

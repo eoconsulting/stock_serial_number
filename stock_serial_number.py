@@ -28,7 +28,6 @@ from dateutil.relativedelta import relativedelta
 class stock_serial(osv.osv):
     
     def _get_last_location_ids(self, cr, uid, ids, field_name, arg, context={}):
-        obj_location = self.pool.get('stock.location')
         vals = {}
         for serial in self.browse(cr,uid,ids,context=context):
             vals[serial.id] = False
@@ -52,12 +51,6 @@ class stock_serial(osv.osv):
                     move_id = move.id
             if not vals[serial.id]: vals[serial.id] = virtual
         return vals
-
-    def _set_last_location_ids(self, cr, uid, ids, field_name, value, arg, context={}):
-        for serial_id, loc_id in self._get_last_location_ids(cr, uid, ids, field_name, arg, context=context):
-            if loc_id:
-                cr.execute("""update stock_serial set last_location_id=%s where id=%s""", (loc_id, serial_id, ))
-        return True
     
     def _get_warranty_end(self, cr, uid, ids, field_name, arg, context=None):
         if context is None: context = {}
@@ -70,50 +63,31 @@ class stock_serial(osv.osv):
             else:
                 vals[serial.id] = False
         return vals
-    
-    def _last_location_search(self, cr, uid, ids, name, args, context=None):
-        if not args:
-            return []
-        location_obj = self.pool.get('stock.location')
-        i = 0
-        while i < len(args):
-            fargs = args[i][0].split('.', 1)
-            if len(fargs) > 1:
-                args[i] = (fargs[0], 'in', location_obj.search(cr, uid, [(fargs[1], args[i][1], args[i][2])]))
-                i += 1
-                continue
-            if isinstance(args[i][2], basestring):
-                res_ids = location_obj.name_search(cr, uid, args[i][2], [], args[i][1])
-                args[i] = (args[i][0], 'in', [x[0] for x in res_ids])
-            i += 1
-        qu1, qu2 = [], []
-        for x in args:
-            if x[1] != 'in':
-                if (x[2] is False) and (x[1] == '='):
-                    qu1.append('(i.id IS NULL)')
-                elif (x[2] is False) and (x[1] == '<>' or x[1] == '!='):
-                    qu1.append('(i.id IS NOT NULL)')
-                else:
-                    qu1.append('(i.id %s %s)' % (x[1], '%s'))
-                    qu2.append(x[2])
-            elif x[1] == 'in':
-                if len(x[2]) > 0:
-                    qu1.append('(i.id IN (%s))' % (','.join(['%s'] * len(x[2]))))
-                    qu2 += x[2]
-                else:
-                    qu1.append(' (False)')
-        if qu1:
-            qu1 = ' AND' + ' AND'.join(qu1)
-        else:
-            qu1 = ''
-        cr.execute('SELECT l.id ' \
-                'FROM stock_serial l, stock_location i ' \
-                'WHERE l.last_location_id = i.id ' + qu1, qu2)
-        res = cr.fetchall()
-        if not res:
-            return [('id', '=', '0')]
-        return [('id', 'in', [x[0] for x in res])]
 
+    def _last_location_search(self, cr, uid, obj, field_name, args, context={}):
+        ids = []
+        if not len(args):
+            [('id', 'in', ids)]
+        operator = args[0][1]
+        value = args[0][2]
+        if operator not in ['=', '!=', 'ilike', 'not ilike']:
+            return [('id', 'in', ids)]
+        cr.execute('select id from stock_serial')
+        location_ids = self._get_last_location_ids(cr, uid, map(lambda x: x[0], cr.fetchall()), field_name, None, context)
+        for res_id in location_ids:
+            if operator == '=':
+                if value == location_ids[res_id]:
+                    ids.append(res_id)
+            elif operator == '!=':
+                if value != location_ids[res_id]:
+                    ids.append(res_id)
+            elif operator == 'ilike' and location_ids[res_id]:
+                if value.lower() in self.pool.get('stock.location').read(cr,uid,location_ids[res_id],['name'],context=context)['name'].lower():
+                    ids.append(res_id)
+            elif operator == 'not ilike':
+                if not location_ids[res_id] or value.lower() not in self.pool.get('stock.location').read(cr,uid,location_ids[res_id],['name'],context=context)['name'].lower():
+                    ids.append(res_id)
+        return [('id', 'in', ids)]
 
     _name = "stock.serial"
     _columns = {
@@ -125,9 +99,8 @@ class stock_serial(osv.osv):
             'warranty' : fields.float('Warranty time (months)'),
             'warranty_start' : fields.date('Warranty Start'),
             'warranty_end' : fields.function(_get_warranty_end,string='Warranty End',type="date",method=True),
-            'last_location_id' : fields.function(_get_last_location_ids, fnct_inv=_set_last_location_ids,
-                                                 string='Last Location',fnct_search=_last_location_search,
-                                                 type="many2one",relation="stock.location",method=True,select=True,store=True),
+            'last_location_id' : fields.function(_get_last_location_ids,string='Last Location',fnct_search=_last_location_search,
+                                                 type="many2one",relation="stock.location",method=True,select=True),
             'uom_id' : fields.related('product_id','uom_id',type='many2one',relation='product.uom',string='Unit of Measure', store=True, readonly=True),
         }
 
@@ -176,15 +149,23 @@ class stock_serial(osv.osv):
             args.append(('last_location_id', '=', context['last_location_id']))
             args.append(('last_location_id', '=', False))
         if context.get('product_id', False):
-            product = self.pool.get('product.product').browse(cr, uid, context['product_id'])
             try:
-                if product.product_tmpl_id.is_multi_variants:
-                    args.append(('product_id.product_tmpl_id.id', '=', product.product_tmpl_id.id))
+                if context.get('move_id', False):
+                    move = self.pool.get('stock.move').browse(cr,uid,context['move_id'])
+                    if move.production_id:
+                        product = self.pool.get('product.product').browse(cr, uid, context['product_id'])
+                        if product.product_tmpl_id.is_multi_variants:
+                            args.append(('product_id.product_tmpl_id.id', '=', product.product_tmpl_id.id))
+                        else:
+                            args.append(('product_id', '=', context['product_id']))
+                    else:
+                        args.append(('product_id', '=', context['product_id']))
                 else:
                     args.append(('product_id', '=', context['product_id']))
-            except:
-                # If 'product_variant_multi' module is not installed, the field 'is_multi_variants'
-                # not exist, so an exception is raised
+            except AttributeError:
+                # If 'product_variant_multi' or 'mrp' modules are not installed,
+                # the fields 'is_multi_variants' and 'production_id'
+                # not exist, so an exception is raised when try to access them
                 args.append(('product_id', '=', context['product_id']))
         res = super(stock_serial, self).search(cr, uid, args, offset=offset, limit=limit, order=order,
                                                                  context=context, count=count)
