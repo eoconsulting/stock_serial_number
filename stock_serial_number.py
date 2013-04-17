@@ -96,6 +96,7 @@ class stock_serial(osv.osv):
             'prodlot_id' : fields.many2one('stock.production.lot','Production Lot',select=1),
             'tracking_id' : fields.many2one('stock.tracking','Tracking Number',select=1),
             'name' : fields.char('Serial Number', size=64, required=True),
+            'note': fields.text("Notes"),
             'warranty' : fields.float('Warranty time (months)'),
             'warranty_start' : fields.date('Warranty Start'),
             'warranty_end' : fields.function(_get_warranty_end,string='Warranty End',type="date",method=True),
