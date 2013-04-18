@@ -146,7 +146,7 @@ class stock_serial(osv.osv):
             'name' : lambda s,cr,u,c: c.get('product_id',False) and s.pool.get('product.product').browse(cr,u,c.get('product_id')).serial_sequence_id and s.pool.get("ir.sequence").get_id(cr,u,s.pool.get('product.product').browse(cr,u,c.get('product_id')).serial_sequence_id.id) or False,
         }
 
-    _order = "name"
+    _order = "name desc"
 
     def on_change_product_id(self, cr, uid, ids, prod_id=False, context=None):
         if not prod_id:
