@@ -27,10 +27,10 @@ from dateutil.relativedelta import relativedelta
 
 class stock_serial(osv.osv):
     
-    def _get_last_location_ids(self, cr, uid, ids, field_name, arg, context={}):
+    def _get_last_move(self, cr, uid, ids, field_name, arg, context={}):
         vals = {}
         for serial in self.browse(cr,uid,ids,context=context):
-            vals[serial.id] = False
+            vals[serial.id] = {'last_location_id': False, 'last_state': False, 'last_address_id': False}
             virtual = False
             max_date = datetime(1,1,1)
             for move in serial.move_ids:
@@ -44,12 +44,17 @@ class stock_serial(osv.osv):
                         # by the pkid
                         break
                     if move.state == 'done':
-                        vals[serial.id] = move.location_dest_id.id
+                        vals[serial.id]['last_location_id'] = move.location_dest_id.id
+                        vals[serial.id]['last_state'] = move.state
+                        vals[serial.id]['last_address_id'] = move.address_id.id
                     elif move.state not in ('cancel','draft'):
-                        virtual = move.location_dest_id.id
+                        virtual = move
                     max_date = move_date
                     move_id = move.id
-            if not vals[serial.id]: vals[serial.id] = virtual
+            if not vals[serial.id]:
+                vals[serial.id]['last_location_id'] = virtual.location_dest_id.id
+                vals[serial.id]['last_state'] = virtual.state
+                vals[serial.id]['last_address_id'] = virtual.address_id.id
         return vals
     
     def _get_warranty_end(self, cr, uid, ids, field_name, arg, context=None):
@@ -73,19 +78,40 @@ class stock_serial(osv.osv):
         if operator not in ['=', '!=', 'ilike', 'not ilike']:
             return [('id', 'in', ids)]
         cr.execute('select id from stock_serial')
-        location_ids = self._get_last_location_ids(cr, uid, map(lambda x: x[0], cr.fetchall()), field_name, None, context)
-        for res_id in location_ids:
+        move_ids = self._get_last_move(cr, uid, map(lambda x: x[0], cr.fetchall()), field_name, None, context)
+        for res_id in move_ids.keys():
+            location_id = move_ids[res_id]['last_location_id']
             if operator == '=':
-                if value == location_ids[res_id]:
+                if value == location_id:
                     ids.append(res_id)
             elif operator == '!=':
-                if value != location_ids[res_id]:
+                if value != location_id:
                     ids.append(res_id)
-            elif operator == 'ilike' and location_ids[res_id]:
-                if value.lower() in self.pool.get('stock.location').read(cr,uid,location_ids[res_id],['name'],context=context)['name'].lower():
+            elif operator == 'ilike' and location_id:
+                if value.lower() in self.pool.get('stock.location').read(cr,uid,location_id,['name'],context=context)['name'].lower():
                     ids.append(res_id)
             elif operator == 'not ilike':
-                if not location_ids[res_id] or value.lower() not in self.pool.get('stock.location').read(cr,uid,location_ids[res_id],['name'],context=context)['name'].lower():
+                if not location_id or value.lower() not in self.pool.get('stock.location').read(cr,uid,location_id,['name'],context=context)['name'].lower():
+                    ids.append(res_id)
+        return [('id', 'in', ids)]
+
+    def _last_state_search(self, cr, uid, obj, field_name, args, context={}):
+        ids = []
+        if not len(args):
+            [('id', 'in', ids)]
+        operator = args[0][1]
+        value = args[0][2]
+        if operator not in ['=', '!=']:
+            return [('id', 'in', ids)]
+        cr.execute('select id from stock_serial')
+        move_ids = self._get_last_move(cr, uid, map(lambda x: x[0], cr.fetchall()), field_name, None, context)
+        for res_id in move_ids.keys():
+            state = move_ids[res_id]['last_state']
+            if operator == '=':
+                if value == state:
+                    ids.append(res_id)
+            elif operator == '!=':
+                if value != state:
                     ids.append(res_id)
         return [('id', 'in', ids)]
 
@@ -100,8 +126,15 @@ class stock_serial(osv.osv):
             'warranty' : fields.float('Warranty time (months)'),
             'warranty_start' : fields.date('Warranty Start'),
             'warranty_end' : fields.function(_get_warranty_end,string='Warranty End',type="date",method=True),
-            'last_location_id' : fields.function(_get_last_location_ids,string='Last Location',fnct_search=_last_location_search,
-                                                 type="many2one",relation="stock.location",method=True,select=True),
+            'last_location_id' : fields.function(_get_last_move,string='Last Location',fnct_search=_last_location_search,
+                                                 type="many2one",relation="stock.location",
+                                                 method=True,select=True,multi=True),
+            'last_state' : fields.function(_get_last_move,string='Last State',fnct_search=_last_state_search,
+                                                 type="selection",selection=[('draft', 'New'), ('waiting', 'Waiting Another Move'), ('confirmed', 'Waiting Availability'), ('assigned', 'Available'), ('done', 'Done'), ('cancel', 'Cancelled')],
+                                                 method=True,select=True,multi=True),
+            'last_address_id' : fields.function(_get_last_move,string='Last Destination Address',
+                                                type="many2one",relation="res.partner.address",
+                                                method=True,multi=True),
             'uom_id' : fields.related('product_id','uom_id',type='many2one',relation='product.uom',string='Unit of Measure', store=True, readonly=True),
         }
 

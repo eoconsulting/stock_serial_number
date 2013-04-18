@@ -7,11 +7,14 @@
             <field name="name">Stock Serial Numbers</field>
             <field name="model">stock.serial</field>
             <field name="type">tree</field>
+            <!--field name="search_view_id" ref="view_stock_serial_number_search"/-->
             <field name="arch" type="xml">
                 <tree string="Stock Serial Numbers">
                     <field name="name" select="1"/>
                     <field name="product_id"/>
                     <field name="last_location_id"/>
+                    <field name="last_address_id"/>
+                    <field name="last_state"/>
                     <field name="prodlot_id"/>
                     <field name="tracking_id"/>
                     <field name="uom_id"/>
@@ -30,9 +33,11 @@
                     <field name="prodlot_id" context="{'product_id':product_id}" domain="[('product_id','=?',product_id)]"/>
                     <field name="tracking_id"/>
                     <field name="warranty_start" on_change="on_change_warranty(warranty_start,warranty)"/>
-                    <field name="warranty" on_change="on_change_warranty(warranty_start,warranty)"/>
-                    <field name="warranty_end"/>
                     <field name="last_location_id"/>
+                    <field name="warranty" on_change="on_change_warranty(warranty_start,warranty)"/>
+                    <field name="last_address_id"/>
+                    <field name="warranty_end"/>
+                    <field name="last_state"/>
                     <notebook colspan="4">
 						<page string="Moves">
 		                    <field name="move_ids" colspan="4" nolabel="1" context="{'product_id':product_id,'prodlot_id':prodlot_id,'tracking_id':tracking_id}" domain="[('product_id','=?',product_id)]">
@@ -58,6 +63,21 @@
                 </form>
             </field>
         </record>
+
+        <!--record id="view_stock_serial_number_search" model="ir.ui.view">
+            <field name="name">Stock Serial Number Search</field>
+            <field name="model">stock.serial</field>
+            <field name="type">search</field>
+            <field name="arch" type="xml">
+                <search string="Search Serial Numbers">
+                    <group>
+	                    <field name="name" select="1"/>
+	                    <field name="product_id"/>
+	                    <field name="last_location_id"/>
+                    </group>
+                </search>
+            </field>
+        </record-->
 		
         <record id="action_stock_serial_number_tree" model="ir.actions.act_window">
             <field name="name">Serial Numbers</field>
