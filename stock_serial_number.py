@@ -46,7 +46,10 @@ class stock_serial(osv.osv):
                     if move.state == 'done':
                         vals[serial.id]['last_location_id'] = move.location_dest_id.id
                         vals[serial.id]['last_state'] = move.state
-                        vals[serial.id]['last_address_id'] = move.address_id.id
+                        if move.address_id.id != False:
+                            vals[serial.id]['last_address_id'] = move.address_id.id
+                        elif move.picking_id and move.picking_id.address_id.id != False:
+                            vals[serial.id]['last_address_id'] = move.picking_id.address_id.id
                     elif move.state not in ('cancel','draft'):
                         virtual = move
                     max_date = move_date
