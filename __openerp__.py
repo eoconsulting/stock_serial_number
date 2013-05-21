@@ -23,7 +23,7 @@
 
 {
     "name": "Stock and Production Serial Number",
-    "version": "1.2",
+    "version": "1.3",
     "description": """
 Adds unique serial numbers to the production lots and stock moves.
     """,
@@ -32,6 +32,7 @@ Adds unique serial numbers to the production lots and stock moves.
     "category": "Warehouse",
     "depends": [
         "stock",
+        "partner_address_name_search",
 	],
     "update_xml":[
 	    "stock_view.xml",

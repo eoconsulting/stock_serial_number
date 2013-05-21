@@ -13,7 +13,7 @@
                     <field name="name" select="1"/>
                     <field name="product_id"/>
                     <field name="last_location_id"/>
-                    <field name="last_address_id"/>
+                    <field name="last_address_id" context="{'contact_display':'partner'}"/>
                     <field name="last_state"/>
                     <field name="prodlot_id"/>
                     <field name="tracking_id"/>

@@ -98,6 +98,26 @@ class stock_serial(osv.osv):
                     ids.append(res_id)
         return [('id', 'in', ids)]
 
+    def _last_address_search(self, cr, uid, obj, field_name, args, context={}):
+        ids = []
+        if not len(args):
+            [('id', 'in', ids)]
+        operator = args[0][1]
+        value = args[0][2]
+        if operator not in ['=', '!=']:
+            return [('id', 'in', ids)]
+        cr.execute('select id from stock_serial')
+        move_ids = self._get_last_move(cr, uid, map(lambda x: x[0], cr.fetchall()), field_name, None, context)
+        for res_id in move_ids.keys():
+            address_id = move_ids[res_id]['last_address_id']
+            if operator == '=':
+                if value == address_id:
+                    ids.append(res_id)
+            elif operator == '!=':
+                if value != address_id:
+                    ids.append(res_id)
+        return [('id', 'in', ids)]
+
     def _last_state_search(self, cr, uid, obj, field_name, args, context={}):
         ids = []
         if not len(args):
@@ -135,9 +155,9 @@ class stock_serial(osv.osv):
             'last_state' : fields.function(_get_last_move,string='Last State',fnct_search=_last_state_search,
                                                  type="selection",selection=[('draft', 'New'), ('waiting', 'Waiting Another Move'), ('confirmed', 'Waiting Availability'), ('assigned', 'Available'), ('done', 'Done'), ('cancel', 'Cancelled')],
                                                  method=True,select=True,multi=True),
-            'last_address_id' : fields.function(_get_last_move,string='Last Destination Address',
+            'last_address_id' : fields.function(_get_last_move,string='Last Destination Address',fnct_search=_last_address_search,
                                                 type="many2one",relation="res.partner.address",
-                                                method=True,multi=True),
+                                                method=True,select=True,multi=True),
             'uom_id' : fields.related('product_id','uom_id',type='many2one',relation='product.uom',string='Unit of Measure', store=True, readonly=True),
         }
 
