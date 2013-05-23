@@ -80,7 +80,7 @@ class stock_move(osv.osv):
             else:
                 len_serial = len(move.serial_ids)
             if move.product_id.is_serial:
-                if qty != len_serial and move.state != 'draft' and move.state != 'waiting':
+                if qty != len_serial and move.state != 'draft' and move.state != 'waiting' and move.state != 'confirmed':
                     raise osv.except_osv(_('Error'),
                             _('The quantity is not equal to serial numbers'))
                 if move.state == 'assigned' or move.state == 'confirmed':
