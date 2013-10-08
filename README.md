@@ -1,6 +1,8 @@
 Stock and Production Serial Number
 ==================================
 
+**This project has been moved to https://launchpad.net/~eoc**
+
 Adds unique serial numbers to the production lots
 and stock moves.
 
